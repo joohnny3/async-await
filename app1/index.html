@@ -62,6 +62,7 @@
 
   async function loadpage(page) {
     const response = await fetch(page, { method: "GET" });
+    console.log(response);
     const p = await response.text();
     document.querySelector(".content").innerHTML = p;
   }

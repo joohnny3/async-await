@@ -1,165 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>學生資料管理系統</title>
-    <link rel="shortcut icon" href="#" type="image/x-icon">
-    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="#" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css" />
     <!---匯入要使用的函式庫--->
     <script src="./jquery-2.1.4.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
-    
-</head>
-<body>
-  <h1 class="header">學生資料管理系統</h1>
-  <button onclick="allStudents()">顯示所有學生</button>
-  <button type="button" class="btn btn-primary" onclick="addModal()">
-    新增學生
-  </button>
-  <div id="classes">
-    <button>一年一班</button>
-    <button>一年二班</button>
-  </div>
-  <div id="students">
-
-  </div>
-  <div id="modal">
-
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>  
-</body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <h1 class="header">學生資料管理系統</h1>
+    <button onclick="allStudents()">顯示所有學生</button>
+    <button type="button" class="btn btn-primary" onclick="addModal()">
+      新增學生
+    </button>
+    <div id="classes">
+      <button>一年一班</button>
+      <button>一年二班</button>
+    </div>
+    <div id="students"></div>
+    <div id="modal"></div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>
 <script>
-/************************************
-* 1.考慮觸發行為的事件
-* 2.建立監聽行為
-* 3.考慮是否需要代入參數
-* 4.是否會有回傳值？回傳值的功用及處理？
-* 5.是否需要更新畫面內容？更新畫面的方法？
-************************************/
-function getForm(els){
-  let data={}
-  els.each((idx,input)=>{
-    data[$(input).attr('id')]=$(input).val()
-  })
-  return data;
-}
+  /************************************
+   * 1.考慮觸發行為的事件
+   * 2.建立監聽行為
+   * 3.考慮是否需要代入參數
+   * 4.是否會有回傳值？回傳值的功用及處理？
+   * 5.是否需要更新畫面內容？更新畫面的方法？
+   ************************************/
+  function getForm(els) {
+    let data = {};
+    els.each((idx, input) => {
+      data[$(input).attr("id")] = $(input).val();
+    });
+    return data;
+  }
 
-//新增資料的函式
-function addStudent(){
-  let form=$("form input")
-  let data=getForm(form)
-  $.post("./api/insert.php",data,(response)=>{
-    if(parseInt(response)>0){
+  //新增資料的函式
+  function addStudent() {
+    let form = $("form input");
+    let data = getForm(form);
+    $.post("./api/insert.php", data, (response) => {
+      if (parseInt(response) > 0) {
+        alert("新增完成");
+      } else {
+        alert("新增失敗");
+      }
 
-      alert("新增完成");
-    }else{
-      alert("新增失敗"); 
-    }
+      windows.hide();
+    });
+  }
 
-    windows.hide()
-
-  })
-}
-
-let mod,windows
-
-function addModal(){
-  $.get("modal.html",(modal)=>{
-    $("#modal").html(modal)
-    //let mod=new bootstrap.Modal(document.getElementById('addModal'))
-
-    mod=document.getElementById("addModal")
-    windows=new bootstrap.Modal(mod)
-    windows.show()
-
-    mod.addEventListener("hidden.bs.modal",function(){
-      $("#modal").html("")
-      windows.dispose()
-      queryClasses();
-    })
-  })
-
-}
-
-function create(){
-
-}
-
-//查詢資料的函式
-queryClasses();
-
-function queryClasses(){
-  $.get("./api/classes.php",(classes)=>{
-    $("#classes").html(classes)
-  })
-}
-
-function allStudents(){
-  now=0
-  $.get("./api/all.php",(students)=>{
-  //$.get("http://220.128.133.15/s1120226/all.php",(students)=>{
-    console.log(students)
-    let list='';
-    students.forEach((stu)=>{
-      list=list+"<div class='m-2'>";
-      list=list + stu.name + '-' + stu.birthday;
-      list=list+"<button class='btn btn-success mx-2'>編輯</button>";
-      list=list+`<button class='btn btn-danger del' data-id='${stu.id}'>刪除</button>`;
-      list=list +"</div>";
-    })
-    $("#students").html(list);
-    regDel();
+  async function addModal() {
+    const response = await fetch("modal.html", { method: "get" });
+    const modal = await response.text();
+    document.querySelector("#modal").innerHTML = modal;
+    const mod = document.querySelector("#addModal");
+    const windows = new bootstrap.Modal(mod);
+    windows.show();
     
-  })
-}
+    mod.addEventListener("hidden.bs.modal", function () {
+      document.querySelector("#modal").innerHTML = "";
+      windows.dispose();
+      queryClasses();
+    });
+  }
+  
+  // let mod, windows;
+  
+  // function addModal() {
+  //   $.get("modal.html", (modal) => {
+  //     $("#modal").html(modal);
+  //     //let mod=new bootstrap.Modal(document.getElementById('addModal'))
 
-function regDel(){
-  $(".del").on('click',function(){
-      let id=$(this).data('id')
+  //     mod = document.getElementById("addModal");
+  //     windows = new bootstrap.Modal(mod);
+  //     windows.show();
 
-      $("#modal").load("confirm.php",{id},function(){
-        mod=document.getElementById("confirmModal")
-        windows=new bootstrap.Modal(mod)
-        windows.show()
+  //     mod.addEventListener("hidden.bs.modal", function () {
+  //       $("#modal").html("");
+  //       windows.dispose();
+  //       queryClasses();
+  //     });
+  //   });
+  // }
 
-         mod.addEventListener("hidden.bs.modal",function(){
-           $("#modal").html("")
-           windows.dispose()
-           queryClasses();
-        })
-      })
+  function create() {}
 
-    })
-}
+  //查詢資料的函式
+  queryClasses();
 
-let now;
+  async function queryClasses() {
+    const response = await fetch("./api/classes.php", { method: "get" });
+    const classes = await response.text();
+    document.querySelector("#classes").innerHTML = classes;
+  }
 
-function query(classroom){
-  now=classroom
-  $.get("./api/query.php",{classroom},(students)=>{
-    $("#students").html(students)
-      regDel();
-  })
-}
+  // function queryClasses() {
+  //   $.get("./api/classes.php", (classes) => {
+  //     $("#classes").html(classes);
+  //   });
+  // }
 
-//編輯資料的函式
-function update(){
+  // async function allStudents() {
+  //   let res = await fetch("./api/all.php", { method: "get" });
+  //   let students = await res.text();
+  //   document.querySelector("#students").innerHTML = students;
+  // }
 
-}
+  async function allStudents() {
+    now = 0;
+    const res = await fetch("./api/all.php", { method: "get" });
+    const students = await res.json();
+    console.log(students);
+    let list = "";
+    students.forEach((stu) => {
+      console.log(stu);
+      list = list + "<div class='m-2'>";
+      list = list + stu.name + "-" + stu.birthday;
+      list = list + "<button class='btn btn-success mx-2'>編輯</button>";
+      list =
+        list +
+        `<button class='btn btn-danger del' data-id='${stu.id}'>刪除</button>`;
+      list = list + "</div>";
+    });
+    document.querySelector("#students").innerHTML = list;
+    regDel();
+  }
 
-//刪除資料的函式
-function del(id){
-  console.log('del');
-  $.post("./api/delete.php",{id},()=>{
-      windows.hide()
-      if(now!=0){
-        query(now)
-      }else{
+  // function allStudents() {
+  //   $.get("./api/all.php", (students) => {
+  //     //$.get("http://220.128.133.15/s1120226/all.php",(students)=>{
+  //     console.log(students);
+  //     let list = "";
+  //     students.forEach((stu) => {
+  //       list = list + "<div class='m-2'>";
+  //       list = list + stu.name + "-" + stu.birthday;
+  //       list = list + "<button class='btn btn-success mx-2'>編輯</button>";
+  //       list = list + `<button class='btn btn-danger del' data-id='${stu.id}'>刪除</button>`;
+  //       list = list + "</div>";
+  //     });
+  //     $("#students").html(list);
+  //     regDel();
+  //   });
+  // }
+
+  function regDel() {
+    $(".del").on("click", function () {
+      let id = $(this).data("id");
+
+      $("#modal").load("confirm.php", { id }, function () {
+        mod = document.getElementById("confirmModal");
+        windows = new bootstrap.Modal(mod);
+        windows.show();
+
+        mod.addEventListener("hidden.bs.modal", function () {
+          $("#modal").html("");
+          windows.dispose();
+          queryClasses();
+        });
+      });
+    });
+  }
+
+  async function query(classroom) {
+    const now = classroom;
+    const response = await fetch(`./api/query.php?classroom=${classroom}`, {
+      method: "get",
+    });
+    const students = await response.text();
+    console.log(students);
+    document.querySelector("#students").innerHTML = students;
+    regDel();
+  }
+
+  // let now;
+
+  // function query(classroom) {
+  //   now = classroom;
+  //   $.get("./api/query.php", { classroom }, (students) => {
+  //     $("#students").html(students);
+  //     regDel();
+  //   });
+  // }
+
+  //編輯資料的函式
+  function update() {}
+
+  //刪除資料的函式
+  function del(id) {
+    console.log("del");
+    $.post("./api/delete.php", { id }, () => {
+      windows.hide();
+      if (now != 0) {
+        query(now);
+      } else {
         allStudents();
       }
-  })
-}
+    });
+  }
 </script>

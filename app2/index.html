@@ -1,39 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>學生資料管理系統</title>
-    <link rel="shortcut icon" href="#" type="image/x-icon" />
-    <link rel="stylesheet" href="style.css" />
-    <!---匯入要使用的函式庫--->
-    <script src="./jquery-2.1.4.min.js"></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0"
-      crossorigin="anonymous"
-    />
-  </head>
-  <body>
-    <h1 class="header">學生資料管理系統</h1>
-    <button onclick="allStudents()">顯示所有學生</button>
-    <button type="button" class="btn btn-primary" onclick="addModal()">
-      新增學生
-    </button>
-    <div id="classes">
-      <button>一年一班</button>
-      <button>一年二班</button>
-    </div>
-    <div id="students"></div>
-    <div id="modal"></div>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8"
-      crossorigin="anonymous"
-    ></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>學生資料管理系統</title>
+  <link rel="shortcut icon" href="#" type="image/x-icon" />
+  <link rel="stylesheet" href="style.css" />
+  <!---匯入要使用的函式庫--->
+  <script src="./jquery-2.1.4.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous" />
+</head>
+
+<body>
+  <h1 class="header">學生資料管理系統</h1>
+  <button onclick="allStudents()">顯示所有學生</button>
+  <button type="button" class="btn btn-primary" onclick="addModal()">
+    新增學生
+  </button>
+  <div id="classes">
+    <button>一年一班</button>
+    <button>一年二班</button>
+  </div>
+  <div id="students"></div>
+  <div id="modal"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8"
+    crossorigin="anonymous"></script>
+</body>
+
 </html>
 <script>
   /************************************
@@ -73,16 +70,16 @@
     const mod = document.querySelector("#addModal");
     const windows = new bootstrap.Modal(mod);
     windows.show();
-    
+
     mod.addEventListener("hidden.bs.modal", function () {
       document.querySelector("#modal").innerHTML = "";
       windows.dispose();
       queryClasses();
     });
   }
-  
+
   // let mod, windows;
-  
+
   // function addModal() {
   //   $.get("modal.html", (modal) => {
   //     $("#modal").html(modal);
@@ -100,7 +97,7 @@
   //   });
   // }
 
-  function create() {}
+  function create() { }
 
   //查詢資料的函式
   queryClasses();
@@ -160,23 +157,70 @@
   //   });
   // }
 
-  function regDel() {
-    $(".del").on("click", function () {
-      let id = $(this).data("id");
+  /* windows 變數被用於控制模態窗口(modal)的顯示與隱藏。然而，在這個 del 函數中，windows 變數並沒有被定義，因此當你嘗試調用 windows.hide() 時，程式無法找到 windows 並且產生錯誤。
+  
+  解決這個問題的一種方法是在 regDel 函數中，將 windows 變數定義為全局變數（假設只有一個模態窗口需要控制）。這樣在 del 函數中就可以訪問到 windows 了
+  
+  全局變數應該謹慎使用，因為它們可以在任何地方被修改，可能會引發一些難以排查的錯誤。在此情況下，由於我們假設只有一個模態窗口需要被控制，因此使用全局變數還算合理。如果你有多個模態窗口需要控制，那麼可能需要考慮一種更結構化的方式來管理它們。
+  
+  因為 jQuery 的 .load() 方法和 $.post() 方法都是異步的，但在 JavaScript 的執行環境中，它們的回調函數在同一個作用域中運行。因此，這兩個方法的回調函數可以共享同一個作用域中的變數，也就是說，如果在一個函數的回調函數中定義了一個變數，那麼在另一個回調函數中也可以訪問這個變數。在您的原始程式碼中，windows 變數就是在 $(".del").on("click", function () {...}) 的回調函數中定義的，並且在 $("#modal").load("confirm.php", { id }, function () {...}) 的回調函數中使用。
+  然而，當您將 jQuery 代碼轉換為原生 JavaScript 代碼時，fetch 函數創建了一個新的作用域，這意味著在 fetch 的回調函數中定義的變數（如 windows）將無法在其他地方訪問，除非將其定義為全局變數或將其傳遞給需要使用該變數的函數。這就是為什麼在您轉換代碼時會出現全局變數的問題。
+  
+  總的來說，這是因為 jQuery 提供的函數和原生 JavaScript 函數在創建作用域和共享變數方面的差異所導致的。在轉換代碼時，需要注意這些差異並相應地調整變數的範疇。*/
 
-      $("#modal").load("confirm.php", { id }, function () {
-        mod = document.getElementById("confirmModal");
+  var windows;
+
+  async function regDel() {
+    const del = document.querySelectorAll('.del')
+    del.forEach(element => {
+      element.addEventListener("click", async function () {
+        let id = this.getAttribute('data-id');
+
+        const modal = document.querySelector('#modal')
+        const response = await fetch('confirm.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `id=${id}`
+        });
+
+        // 將回應的內容加載到 #modal 元素
+        const responseData = await response.text();
+        modal.innerHTML = responseData;
+
+        // 彈出 Modal，請確認你已經加載了Bootstrap的JS庫
+        const mod = document.querySelector('#confirmModal');
         windows = new bootstrap.Modal(mod);
         windows.show();
 
-        mod.addEventListener("hidden.bs.modal", function () {
-          $("#modal").html("");
+        // 當 Modal 隱藏時，進行一些清理並再次查詢類別
+        mod.addEventListener('hidden.bs.modal', () => {
+          modal.innerHTML = '';
           windows.dispose();
           queryClasses();
         });
-      });
+      })
     });
   }
+
+  // function regDel() {
+  //   $(".del").on("click", function () {
+  //     let id = $(this).data("id");
+
+  //     $("#modal").load("confirm.php", { id }, function () {
+  //       mod = document.getElementById("confirmModal");
+  //       windows = new bootstrap.Modal(mod);
+  //       windows.show();
+
+  //       mod.addEventListener("hidden.bs.modal", function () {
+  //         $("#modal").html("");
+  //         windows.dispose();
+  //         queryClasses();
+  //       });
+  //     });
+  //   });
+  // }
 
   async function query(classroom) {
     const now = classroom;
@@ -200,18 +244,34 @@
   // }
 
   //編輯資料的函式
-  function update() {}
+  function update() { }
 
   //刪除資料的函式
-  function del(id) {
-    console.log("del");
-    $.post("./api/delete.php", { id }, () => {
-      windows.hide();
-      if (now != 0) {
-        query(now);
-      } else {
-        allStudents();
-      }
-    });
+  async function del(id) {
+    const response = await fetch('./api/delete.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `id=${id}`
+    })
+    windows.hide();  // 現在可以訪問到 windows 變數了
+    if (now != 0) {
+      query(now);
+    } else {
+      allStudents();
+    }
   }
+
+  // function del(id) {
+  //   console.log("del");
+  //   $.post("./api/delete.php", { id }, () => {
+  //     windows.hide();
+  //     if (now != 0) {
+  //       query(now);
+  //     } else {
+  //       allStudents();
+  //     }
+  //   });
+  // }
 </script>

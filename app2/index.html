@@ -16,7 +16,7 @@
 
 <body>
   <h1 class="header">學生資料管理系統</h1>
-  <button onclick="allStudents()">顯示所有學生</button>
+  <button onclick="allStudents()" class="btn btn-warning btn-lg">顯示所有學生</button>
   <button type="button" class="btn btn-primary" onclick="addModal()">
     新增學生
   </button>
@@ -124,13 +124,13 @@
     now = 0;
     const res = await fetch("./api/all.php", { method: "get" });
     const students = await res.json();
-    console.log(students);
+    // console.log(students);
     let list = "";
     students.forEach((stu) => {
-      console.log(stu);
+      // console.log(stu);
       list = list + "<div class='m-2'>";
       list = list + stu.name + "-" + stu.birthday;
-      list = list + "<button class='btn btn-success mx-2'>編輯</button>";
+      list = list + `<button class='btn btn-success mx-2 edit' data-id='${stu.id}'>編輯</button>`;
       list =
         list +
         `<button class='btn btn-danger del' data-id='${stu.id}'>刪除</button>`;
@@ -138,7 +138,63 @@
     });
     document.querySelector("#students").innerHTML = list;
     regDel();
+    regEdit();
   }
+
+  async function regEdit() {
+    const del = document.querySelectorAll('.edit')
+    del.forEach(element => {
+      element.addEventListener("click", async function () {
+        let id = this.getAttribute('data-id');
+
+        const modal = document.querySelector('#modal')
+        const response = await fetch('edit_form.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `id=${id}`
+        });
+
+        // 將回應的內容加載到 #modal 元素
+        const responseData = await response.text();
+        modal.innerHTML = responseData;
+
+        // 彈出 Modal，請確認你已經加載了Bootstrap的JS庫
+        const mod = document.querySelector('#editModal');
+        windows = new bootstrap.Modal(mod);
+        windows.show();
+
+        // 當 Modal 隱藏時，進行一些清理並再次查詢類別
+        mod.addEventListener('hidden.bs.modal', () => {
+          modal.innerHTML = '';
+          windows.dispose();
+          queryClasses();
+        });
+      })
+    });
+  }
+
+
+  //   function regEdit(){
+  //   $(".edit").on('click',function(){
+  //       let id=$(this).data('id')
+
+  //       $("#modal").load("edit_form.php",{id},function(){
+  //         mod=document.getElementById("editModal")
+  //         windows=new bootstrap.Modal(mod)
+  //         windows.show()
+
+  //          mod.addEventListener("hidden.bs.modal",function(){
+  //            $("#modal").html("")
+  //            windows.dispose()
+  //            queryClasses();
+  //         })
+  //       })
+
+  //     })
+  // }
+
 
   // function allStudents() {
   //   $.get("./api/all.php", (students) => {
@@ -224,28 +280,47 @@
 
   async function query(classroom) {
     const now = classroom;
-    const response = await fetch(`./api/query.php?classroom=${classroom}`, {
-      method: "get",
-    });
-    const students = await response.text();
-    console.log(students);
-    document.querySelector("#students").innerHTML = students;
-    regDel();
+    if (classroom == 0) {
+      allStudents()
+    } else {
+      const response = await fetch(`./api/query.php?classroom=${classroom}`, {
+        method: "get",
+      });
+      const students = await response.text();
+      // console.log(students);
+      document.querySelector("#students").innerHTML = students;
+      regDel();
+      regEdit()
+    }
   }
 
   // let now;
 
   // function query(classroom) {
-  //   now = classroom;
-  //   $.get("./api/query.php", { classroom }, (students) => {
-  //     $("#students").html(students);
-  //     regDel();
-  //   });
+  //   now = classroom
+  //   if (now == 0) {
+  //     allStudents()
+  //   } else {
+  //     $.get("./api/query.php", { classroom }, (students) => {
+  //       $("#students").html(students)
+  //       regDel();
+  //       regEdit()
+  //     })
+  //   }
   // }
 
   //編輯資料的函式
-  function update() { }
-
+  function editStudent() {
+    let form = $("#editModal input")
+    let data = getForm(form)
+    //console.log(data);
+    $.post("./api/update.php", data, (res) => {
+      //console.log(res)
+      alert("更新成功")
+      windows.hide()
+      query(now)
+    })
+  }
   //刪除資料的函式
   async function del(id) {
     const response = await fetch('./api/delete.php', {
